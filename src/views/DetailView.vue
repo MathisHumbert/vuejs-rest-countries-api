@@ -3,18 +3,35 @@ import { ref, onMounted } from 'vue';
 import { useRoute, RouterLink, useRouter } from 'vue-router';
 
 const country = ref(null);
+const borders = ref(null);
 
 const router = useRouter();
 const route = useRoute();
 
 const fetchCountryData = async (id) => {
-  const response = await fetch(
+  const countryResponse = await fetch(
     `https://restcountries.com/v3.1/alpha?codes=${id}`
   );
-  const data = await response.json();
+  const countryData = await countryResponse.json();
 
-  if (data.length) {
-    country.value = data[0];
+  if (countryData.length) {
+    country.value = countryData[0];
+
+    const borderPromises = country.value.borders.map(async (border) => {
+      const borderResponse = await fetch(
+        `https://restcountries.com/v3.1/alpha?codes=${border}`
+      );
+
+      const borderData = await borderResponse.json();
+
+      return borderData[0];
+    });
+
+    const bordersData = await Promise.all(borderPromises);
+
+    if (bordersData.length) {
+      borders.value = bordersData;
+    }
   }
 };
 
@@ -118,11 +135,14 @@ onMounted(async () => {
         <div class="detail__border">
           <p class="detail__border__text">Border Countries:</p>
           <div
-            v-for="border in country.borders"
-            @click="navigateToBordersCountry(border)"
+            v-for="border in borders"
+            @click="navigateToBordersCountry(border.cca2)"
             class="detail__border__card"
           >
-            <p class="detail__border__card__text">{{ border }}</p>
+            <!-- show border name -->
+            <p class="detail__border__card__text">
+              {{ border.name && border.name.official }}
+            </p>
           </div>
         </div>
       </div>

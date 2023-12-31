@@ -59,6 +59,7 @@ watch(searchInput, async () => {
       </div>
       <div class="filter">
         <div class="filter__input">
+          <!-- create filter input -->
           <p>Filter by Region</p>
         </div>
       </div>
