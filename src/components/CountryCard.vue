@@ -48,6 +48,7 @@ a {
   height: 100%;
   color: var(--secondary-color);
   text-decoration: none;
+  box-shadow: 0px 0px 7px 2px rgba(0, 0, 0, 0.03);
 }
 
 .country {

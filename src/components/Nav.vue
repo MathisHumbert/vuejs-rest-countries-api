@@ -2,12 +2,22 @@
 import { ref } from 'vue';
 
 const theme = ref('dark');
+
+const updateTheme = () => {
+  if (theme.value === 'dark') {
+    theme.value = 'light';
+    document.documentElement.classList.add('light');
+  } else {
+    theme.value = 'dark';
+    document.documentElement.classList.remove('light');
+  }
+};
 </script>
 
 <template>
   <nav class="nav">
     <h1 class="nav__title">Were in the world?</h1>
-    <div class="toggle">
+    <div @click="updateTheme()" class="toggle">
       <svg
         v-if="theme === 'dark'"
         class="toggle__icon"
@@ -26,6 +36,7 @@ const theme = ref('dark');
       </svg>
       <svg
         v-else
+        class="toggle__icon"
         xmlns="http://www.w3.org/2000/svg"
         width="100%"
         height="100%"
@@ -65,6 +76,7 @@ const theme = ref('dark');
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
 }
 
 .toggle__icon {
@@ -75,5 +87,20 @@ const theme = ref('dark');
 .toggle__text {
   font-size: 16px;
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .nav__title {
+    font-size: 14px;
+  }
+
+  .toggle__text {
+    font-size: 12px;
+  }
+
+  .toggle__icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 </style>

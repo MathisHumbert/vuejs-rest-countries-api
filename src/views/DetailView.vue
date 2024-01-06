@@ -17,20 +17,22 @@ const fetchCountryData = async (id) => {
   if (countryData.length) {
     country.value = countryData[0];
 
-    const borderPromises = country.value.borders.map(async (border) => {
-      const borderResponse = await fetch(
-        `https://restcountries.com/v3.1/alpha?codes=${border}`
-      );
+    if (country.value.borders) {
+      const borderPromises = country.value.borders.map(async (border) => {
+        const borderResponse = await fetch(
+          `https://restcountries.com/v3.1/alpha?codes=${border}`
+        );
 
-      const borderData = await borderResponse.json();
+        const borderData = await borderResponse.json();
 
-      return borderData[0];
-    });
+        return borderData[0];
+      });
 
-    const bordersData = await Promise.all(borderPromises);
+      const bordersData = await Promise.all(borderPromises);
 
-    if (bordersData.length) {
-      borders.value = bordersData;
+      if (bordersData.length) {
+        borders.value = bordersData;
+      }
     }
   }
 };
@@ -74,7 +76,7 @@ onMounted(async () => {
       />
       <div class="detail__container">
         <h2 class="detail__title">
-          {{ country.name && country.name.official }}
+          {{ country.name ? country.name.official : '-' }}
         </h2>
         <div class="detail__content">
           <div class="detail__content__left">
@@ -92,57 +94,74 @@ onMounted(async () => {
             <div class="detail__content__container">
               <p class="detail__content__title">Population:</p>
               &nbsp;
-              <p class="detail__content__text">{{ country.population }}</p>
+              <p class="detail__content__text">
+                {{ country.population || '-' }}
+              </p>
             </div>
             <div class="detail__content__container">
               <p class="detail__content__title">Region:</p>
               &nbsp;
-              <p class="detail__content__text">{{ country.region }}</p>
+              <p class="detail__content__text">{{ country.region || '-' }}</p>
             </div>
             <div class="detail__content__container">
               <p class="detail__content__title">Sub Region:</p>
               &nbsp;
-              <p class="detail__content__text">{{ country.subregion }}</p>
+              <p class="detail__content__text">
+                {{ country.subregion || '-' }}
+              </p>
             </div>
             <div class="detail__content__container">
               <p class="detail__content__title">Capital:</p>
               &nbsp;
-              <p class="detail__content__text">{{ country.capital[0] }}</p>
+              <p class="detail__content__text">
+                {{ country.capital ? country.capital[0] : '-' }}
+              </p>
             </div>
           </div>
           <div class="detail__content__right">
             <div class="detail__content__container">
               <p class="detail__content__title">Top Level Domain:</p>
               &nbsp;
-              <p class="detail__content__text">{{ country.tld[0] }}</p>
+              <p class="detail__content__text">
+                {{ country.tld ? country.tld[0] : '-' }}
+              </p>
             </div>
             <div class="detail__content__container">
               <p class="detail__content__title">Currencies:</p>
               &nbsp;
               <p class="detail__content__text">
-                {{ Object.values(country.currencies)[0].name }}
+                {{
+                  Object.values(country.currencies).length > 0
+                    ? Object.values(country.currencies)[0].name
+                    : '-'
+                }}
               </p>
             </div>
             <div class="detail__content__container">
               <p class="detail__content__title">Languages:</p>
               &nbsp;
               <p class="detail__content__text">
-                {{ Object.values(country.languages).join(', ') }}
+                {{
+                  Object.values(country.languages).length > 0
+                    ? Object.values(country.languages).join(', ')
+                    : '-'
+                }}
               </p>
             </div>
           </div>
         </div>
-        <div class="detail__border">
+        <div v-if="borders !== null" class="detail__border">
           <p class="detail__border__text">Border Countries:</p>
-          <div
-            v-for="border in borders"
-            @click="navigateToBordersCountry(border.cca2)"
-            class="detail__border__card"
-          >
-            <!-- show border name -->
-            <p class="detail__border__card__text">
-              {{ border.name && border.name.official }}
-            </p>
+          <div class="detail__border__container">
+            <div
+              v-for="border in borders"
+              @click="navigateToBordersCountry(border.cca2)"
+              class="detail__border__card"
+            >
+              <p class="detail__border__card__text">
+                {{ border.name ? border.name.common : border.cca2 }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -170,6 +189,10 @@ onMounted(async () => {
 .detail__back__icon {
   width: 20px;
   height: 20px;
+}
+
+.detail__back__icon path {
+  fill: var(--secondary-color);
 }
 
 .detail__back__text {
@@ -210,7 +233,7 @@ onMounted(async () => {
 .detail__content__right {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
 }
 
 .detail__content__container {
@@ -229,16 +252,25 @@ onMounted(async () => {
 
 .detail__border {
   display: flex;
+  align-items: center;
   gap: 16px;
 }
 
 .detail__border__text {
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.detail__border__container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .detail__border__card {
-  width: 96px;
+  min-width: 96px;
+  padding: 4px 10px;
   height: 28px;
   display: flex;
   align-items: center;
@@ -246,10 +278,29 @@ onMounted(async () => {
   border-radius: 2px;
   background: var(--primary-color);
   box-shadow: 0px 0px 4px 1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .detail__border__card__text {
   font-size: 14px;
   font-weight: 300;
+}
+
+@media (max-width: 1280px) {
+  .detail__article {
+    flex-direction: column;
+    gap: 44px;
+    margin-top: 70px;
+  }
+
+  .detail__content {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .detail__border {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>
